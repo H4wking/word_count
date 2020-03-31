@@ -1,3 +1,0 @@
-/mnt/c/Users/sluzh/OneDrive/Documents/ACS/word_count/cmake-build-release-wsl/CMakeFiles/rebuild_cache.dir
-/mnt/c/Users/sluzh/OneDrive/Documents/ACS/word_count/cmake-build-release-wsl/CMakeFiles/word_count.dir
-/mnt/c/Users/sluzh/OneDrive/Documents/ACS/word_count/cmake-build-release-wsl/CMakeFiles/edit_cache.dir
