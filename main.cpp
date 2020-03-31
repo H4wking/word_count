@@ -1,5 +1,10 @@
 #include <iostream>
 #include <fstream>
+#include <boost/locale/boundary.hpp>
+#include <boost/locale/generator.hpp>
+#include <string>
+#include <locale>
+#include <map>
 
 int main(int argc, char* argv[]) {
     std::string conf_file;
@@ -25,6 +30,41 @@ int main(int argc, char* argv[]) {
     conf >> in;
     conf >> out;
     conf >> thr;
+
+    std::ifstream text(in, std::ios::in);
+
+    std::string str((std::istreambuf_iterator<char>(text)),
+                    std::istreambuf_iterator<char>());
+
+    namespace bl =boost::locale::boundary;
+
+
+    boost::locale::generator gen;
+    std::locale::global(gen(""));
+    bl::ssegment_index map(bl::word, str.begin(), str.end());
+
+// Define a rule
+    map.rule(bl::word_any);
+// Print all "words" -- chunks of word boundary
+
+    std::map<std::string, int> dict;
+    for (bl::ssegment_index::iterator it = map.begin(), e = map.end(); it != e; ++it) {
+        if (!dict.count(*it)) {
+            dict.insert(std::pair<std::string, int>(*it, 1));
+        } else {
+            dict[*it] += 1;
+        }
+    }
+
+    std::map<std::string, int>::iterator itr;
+    std::cout << "\nThe map dict is: \n";
+    std::cout << "\tKEY\tELEMENT\n";
+    for (itr = dict.begin(); itr != dict.end(); ++itr) {
+        std::cout << '\t' << itr->first
+             << '\t' << itr->second << '\n';
+    }
+    std::cout << std::endl;
+
 
     return 0;
 }
