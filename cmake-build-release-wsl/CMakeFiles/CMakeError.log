@@ -1,0 +1,75 @@
+Determining if the function zip_open_from_source exists in the zip failed with the following output:
+Change Dir: /mnt/c/Users/sluzh/OneDrive/Documents/ACS/word_count/cmake-build-release-wsl/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_568ef/fast"
+/usr/bin/make -f CMakeFiles/cmTC_568ef.dir/build.make CMakeFiles/cmTC_568ef.dir/build
+make[1]: Entering directory '/mnt/c/Users/sluzh/OneDrive/Documents/ACS/word_count/cmake-build-release-wsl/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_568ef.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=zip_open_from_source   -o CMakeFiles/cmTC_568ef.dir/CheckFunctionExists.c.o   -c /usr/share/cmake-3.10/Modules/CheckFunctionExists.c
+Linking C executable cmTC_568ef
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_568ef.dir/link.txt --verbose=1
+/usr/bin/cc  -DCHECK_FUNCTION_EXISTS=zip_open_from_source    CMakeFiles/cmTC_568ef.dir/CheckFunctionExists.c.o  -o cmTC_568ef -lzip 
+/usr/bin/ld: cannot find -lzip
+collect2: error: ld returned 1 exit status
+CMakeFiles/cmTC_568ef.dir/build.make:97: recipe for target 'cmTC_568ef' failed
+make[1]: *** [cmTC_568ef] Error 1
+make[1]: Leaving directory '/mnt/c/Users/sluzh/OneDrive/Documents/ACS/word_count/cmake-build-release-wsl/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_568ef/fast' failed
+make: *** [cmTC_568ef/fast] Error 2
+
+
+Determining if the pthread_create exist failed with the following output:
+Change Dir: /mnt/c/Users/sluzh/OneDrive/Documents/ACS/word_count/cmake-build-release-wsl/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_a43ed/fast"
+/usr/bin/make -f CMakeFiles/cmTC_a43ed.dir/build.make CMakeFiles/cmTC_a43ed.dir/build
+make[1]: Entering directory '/mnt/c/Users/sluzh/OneDrive/Documents/ACS/word_count/cmake-build-release-wsl/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_a43ed.dir/CheckSymbolExists.c.o
+/usr/bin/cc    -o CMakeFiles/cmTC_a43ed.dir/CheckSymbolExists.c.o   -c /mnt/c/Users/sluzh/OneDrive/Documents/ACS/word_count/cmake-build-release-wsl/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTC_a43ed
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_a43ed.dir/link.txt --verbose=1
+/usr/bin/cc      CMakeFiles/cmTC_a43ed.dir/CheckSymbolExists.c.o  -o cmTC_a43ed 
+CMakeFiles/cmTC_a43ed.dir/CheckSymbolExists.c.o: In function `main':
+CheckSymbolExists.c:(.text+0x1b): undefined reference to `pthread_create'
+collect2: error: ld returned 1 exit status
+CMakeFiles/cmTC_a43ed.dir/build.make:97: recipe for target 'cmTC_a43ed' failed
+make[1]: *** [cmTC_a43ed] Error 1
+make[1]: Leaving directory '/mnt/c/Users/sluzh/OneDrive/Documents/ACS/word_count/cmake-build-release-wsl/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_a43ed/fast' failed
+make: *** [cmTC_a43ed/fast] Error 2
+
+File /mnt/c/Users/sluzh/OneDrive/Documents/ACS/word_count/cmake-build-release-wsl/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /mnt/c/Users/sluzh/OneDrive/Documents/ACS/word_count/cmake-build-release-wsl/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_a6295/fast"
+/usr/bin/make -f CMakeFiles/cmTC_a6295.dir/build.make CMakeFiles/cmTC_a6295.dir/build
+make[1]: Entering directory '/mnt/c/Users/sluzh/OneDrive/Documents/ACS/word_count/cmake-build-release-wsl/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_a6295.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_a6295.dir/CheckFunctionExists.c.o   -c /usr/share/cmake-3.10/Modules/CheckFunctionExists.c
+Linking C executable cmTC_a6295
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_a6295.dir/link.txt --verbose=1
+/usr/bin/cc  -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTC_a6295.dir/CheckFunctionExists.c.o  -o cmTC_a6295 -lpthreads 
+/usr/bin/ld: cannot find -lpthreads
+collect2: error: ld returned 1 exit status
+CMakeFiles/cmTC_a6295.dir/build.make:97: recipe for target 'cmTC_a6295' failed
+make[1]: *** [cmTC_a6295] Error 1
+make[1]: Leaving directory '/mnt/c/Users/sluzh/OneDrive/Documents/ACS/word_count/cmake-build-release-wsl/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_a6295/fast' failed
+make: *** [cmTC_a6295/fast] Error 2
+
+

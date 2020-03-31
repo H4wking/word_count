@@ -1,0 +1,14 @@
+/usr/bin/cmake -DCMAKE_BUILD_TYPE=Release -G "CodeBlocks - Unix Makefiles" /mnt/c/Users/sluzh/OneDrive/Documents/ACS/word_count
+-- Found LibArchive: /usr/lib/x86_64-linux-gnu/libarchive.so (found version "3.2.2") 
+-- Found the following ICU libraries:
+--   uc (required)
+--   i18n (required)
+-- Found ICU: /usr/include (found version "60.2") 
+-- Boost version: 1.65.1
+-- Found the following Boost libraries:
+--   locale
+--   filesystem
+--   system
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /mnt/c/Users/sluzh/OneDrive/Documents/ACS/word_count/cmake-build-release-wsl
