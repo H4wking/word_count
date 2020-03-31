@@ -24,11 +24,12 @@ int main(int argc, char* argv[]) {
         exit(2);
     }
 
-    std::string in, out;
+    std::string in, out_a, out_n;
     int thr;
 
     conf >> in;
-    conf >> out;
+    conf >> out_a;
+    conf >> out_n;
     conf >> thr;
 
     std::ifstream text(in, std::ios::in);
