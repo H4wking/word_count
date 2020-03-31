@@ -1,8 +1,8 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
-#include <archive.h>
-#include <archive_entry.h>
+#include </usr/local/opt/libarchive/include/archive.h>
+#include </usr/local/opt/libarchive/include/archive_entry.h>
 #include <boost/locale/boundary.hpp>
 #include <boost/locale/generator.hpp>
 #include <string>
