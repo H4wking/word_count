@@ -14,6 +14,8 @@ endif ()
 find_package(LibArchive REQUIRED)
 find_package(ICU REQUIRED COMPONENTS uc i18n)
 find_package(Threads REQUIRED)
+#add_subdirectory("path-to-boost-nowide-repo")
+#find_package(boost_nowide)
 find_package(Boost REQUIRED COMPONENTS
         locale filesystem system)
 

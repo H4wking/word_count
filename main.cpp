@@ -2,14 +2,11 @@
 #include <fstream>
 #include <archive.h>
 #include <archive_entry.h>
-#include <boost/locale/boundary.hpp>
-#include <boost/locale/generator.hpp>
+#include <boost/format.hpp>
 #include <boost/locale.hpp>
 #include <string>
 #include <map>
 #include <vector>
-#include <locale>
-#include <codecvt>
 
 static void extract_from_archive(const std::string &buffer, char **txt) {
     // initialize variable for libarchive
@@ -31,13 +28,13 @@ static void extract_from_archive(const std::string &buffer, char **txt) {
     archive_read_free(a);
 }
 
+
 template<class struct_t>
 int write_file(std::string filename, struct_t mp) {
     std::ofstream out;
-    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
     out.open(filename, std::ios::trunc | std::ios::out | std::ios::binary);
     for (auto &it : mp) {
-        out << it.first << "  " << it.second << std::endl;
+        out << boost::format("%1% %|15t| : %|25t| %2%\n") % it.first.c_str() % it.second;
     }
     out.close();
     return 0;
@@ -62,8 +59,8 @@ std::vector<std::pair<std::string, int>> sort_by_value(std::map<std::string, int
 
     // print the vector
     std::cout << "The map, sorted by value is: " << std::endl;
-    for (int i = 0; i < vec.size(); i++) {
-        std::cout << vec[i].first << ": " << vec[i].second << std::endl;
+    for (auto &it: mp) {
+        std::cout << boost::format("%1% %|15t| : %|25t| %2%\n") % it.first.c_str() % it.second;
     }
 
     return vec;
@@ -71,7 +68,7 @@ std::vector<std::pair<std::string, int>> sort_by_value(std::map<std::string, int
 
 int main(int argc, char *argv[]) {
     boost::locale::generator gen;
-    std::locale::global(gen(""));
+    std::locale::global(gen("en_US.UTF-8"));
     std::string conf_file;
     if (argc == 1) {
         conf_file = "config.dat";
@@ -124,18 +121,7 @@ int main(int argc, char *argv[]) {
     }
 
     write_file(out_a, dict);
-
-    std::map<std::string, int>::iterator itr;
-    std::cout << "\nThe map dict is: \n";
-    std::cout << "\tKEY\tELEMENT\n";
-    for (itr = dict.begin(); itr != dict.end(); ++itr) {
-        std::cout << '\t' << itr->first
-                  << '\t' << itr->second << '\n';
-    }
-    std::cout << std::endl;
-
     std::vector<std::pair<std::string, int>> vec = sort_by_value(dict);
-
     write_file(out_n, vec);
 
     return 0;
