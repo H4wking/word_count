@@ -9,6 +9,7 @@
 #include <map>
 #include <vector>
 #include <locale>
+#include <boost/algorithm/string.hpp>
 
 
 static void extract_to_vector(const std::string &buffer, std::vector<std::string> *vector_txt) {
@@ -17,7 +18,7 @@ static void extract_to_vector(const std::string &buffer, std::vector<std::string
     off_t filesize;
     struct archive *a = archive_read_new();
     archive_read_support_format_all(a);
-    archive_read_support_filter_all(a);
+//    archive_read_support_filter_all(a);
     r = archive_read_open_memory(a, buffer.c_str(), buffer.size());
     r = archive_read_next_header(a, &entry);
     filesize = archive_entry_size(entry);
@@ -25,9 +26,55 @@ static void extract_to_vector(const std::string &buffer, std::vector<std::string
     r = archive_read_data(a, &output[0], output.size());
     vector_txt->push_back(output);
     archive_read_close(a);
-    archive_read_free(a);
+//    archive_read_free(a);
 }
 
+void write_file(std::string filename, std::map<std::string, int> mp){
+
+    FILE *f = fopen(filename.c_str(), "w");
+
+    for(std::map<std::string, int>::iterator it = mp.begin(); it != mp.end(); it++) {
+        fprintf(f, "%s  %d\n", it->first.c_str(), it->second);
+    }
+    fclose(f);
+}
+
+void write_file2(std::string filename, std::vector<std::pair<std::string, int>> vec){
+    FILE *f = fopen(filename.c_str(), "w");
+
+    for ( std::vector<std::pair<std::string, int>>::const_iterator it = vec.begin() ; it != vec.end(); it++) {
+        fprintf(f, "%s  %d\n", it->first.c_str(), it->second);
+    }
+
+    fclose(f);
+}
+
+bool sortByVal(const std::pair <std::string, int> &a, const std::pair<std::string, int> &b){
+    return (a.second > b.second);
+}
+
+std::vector<std::pair<std::string, int>> sort_by_value (std::map<std::string,int> mp){
+    std::map<std::string, int> :: iterator it;
+
+    std::vector<std::pair<std::string, int>> vec;
+
+    for (it=mp.begin(); it!=mp.end(); it++)
+    {
+        vec.push_back(make_pair(it->first, it->second));
+    }
+
+    // // sort the vector by increasing order of its pair's second value
+    sort(vec.begin(), vec.end(), sortByVal);
+
+    // print the vector
+    std::cout << "The map, sorted by value is: " << std::endl;
+    for (int i = 0; i < vec.size(); i++)
+    {
+        std::cout << vec[i].first << ": " << vec[i].second << std::endl;
+    }
+
+    return vec;
+}
 
 int main(int argc, char *argv[]) {
     std::string conf_file;
@@ -54,6 +101,7 @@ int main(int argc, char *argv[]) {
     conf >> out_a;
     conf >> out_n;
     conf >> thr;
+
     std::ifstream raw_file(in, std::ios::binary);
     std::ostringstream buffer_ss;
     buffer_ss << raw_file.rdbuf();
@@ -63,6 +111,7 @@ int main(int argc, char *argv[]) {
 
     namespace bl =boost::locale::boundary;
 
+    boost::algorithm::to_lower(files_txt[0]);
 
     boost::locale::generator gen;
     std::locale::global(gen(""));
@@ -81,6 +130,8 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    write_file(out_a, dict);
+
     std::map<std::string, int>::iterator itr;
     std::cout << "\nThe map dict is: \n";
     std::cout << "\tKEY\tELEMENT\n";
@@ -90,6 +141,9 @@ int main(int argc, char *argv[]) {
     }
     std::cout << std::endl;
 
+    std::vector<std::pair<std::string, int>> vec = sort_by_value(dict);
+
+    write_file2(out_n, vec);
 
     return 0;
 }
