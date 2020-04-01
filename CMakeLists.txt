@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.10)
 project(word_count)
 set(CMAKE_CXX_STANDARD 14)
 set(LibZip_LIBRARIES "")
-set(LibArchive_INCLUDE_DIR "/usr/local/opt/libarchive/lib")
 include(CheckLibraryExists)
 SET(LibZip_LIBRARY_PATH "")
 check_library_exists(zip zip_open_from_source
