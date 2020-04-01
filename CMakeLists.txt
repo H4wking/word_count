@@ -12,7 +12,7 @@ if (LibZip_FOUND)
     link_directories(${LibZip_LIBRARY_PATH})
 endif ()
 find_package(LibArchive REQUIRED)
-#find_package(ICU REQUIRED COMPONENTS uc i18n)
+find_package(ICU REQUIRED COMPONENTS uc i18n)
 find_package(Threads REQUIRED)
 find_package(Boost REQUIRED COMPONENTS
         locale filesystem system)

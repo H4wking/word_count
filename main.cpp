@@ -1,55 +1,48 @@
 #include <iostream>
-#include <sstream>
 #include <fstream>
 #include <archive.h>
 #include <archive_entry.h>
 #include <boost/locale/boundary.hpp>
 #include <boost/locale/generator.hpp>
+#include <boost/locale.hpp>
 #include <string>
 #include <map>
 #include <vector>
 #include <locale>
-#include <boost/algorithm/string.hpp>
+#include <codecvt>
 
-static void extract_to_vector(const std::string &buffer, std::vector<std::string> *vector_txt) {
+static void extract_from_archive(const std::string &buffer, char **txt) {
+    // initialize variable for libarchive
     struct archive_entry *entry;
     int r;
-    off_t filesize;
+    int64_t entrysize;
     struct archive *a = archive_read_new();
+    archive_read_support_filter_all(a);
+    // all formats supporting like zip, tar ...
     archive_read_support_format_all(a);
-//    archive_read_support_filter_all(a);
     r = archive_read_open_memory(a, buffer.c_str(), buffer.size());
     r = archive_read_next_header(a, &entry);
-    filesize = archive_entry_size(entry);
-    std::string output(filesize, char{});
-    r = archive_read_data(a, &output[0], output.size());
-    vector_txt->push_back(output);
+    // finding size
+    entrysize = archive_entry_size(entry);
+    // allocating memory for out data-pointer
+    *txt = static_cast<char *>(malloc(entrysize));
+    r = archive_read_data(a, *txt, entrysize);
     archive_read_close(a);
-//    archive_read_free(a);
+    archive_read_free(a);
 }
 
-
-int write_file(std::string filename, std::map<std::string, int> mp) {
-    std::wofstream out;
-    out.open(filename, std::ios::out | std::ios::app);
-    out.imbue(std::locale("en_US.UTF-8"));
+template<class struct_t>
+int write_file(std::string filename, struct_t mp) {
+    std::ofstream out;
+    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+    out.open(filename, std::ios::trunc | std::ios::out | std::ios::binary);
     for (auto &it : mp) {
-        out << it.first.c_str() << "  " << it.second << std::endl;
+        out << it.first << "  " << it.second << std::endl;
     }
     out.close();
     return 0;
 }
 
-int write_file2(std::string filename, std::vector<std::pair<std::string, int>> vec) {
-    std::wofstream out;
-    out.open(filename, std::ios::out | std::ios::app);
-    out.imbue(std::locale("en_US.UTF-8"));
-    for (const auto &it : vec) {
-        out << it.first.c_str() << "  " << it.second << std::endl;
-    }
-    out.close();
-    return 0;
-}
 
 bool sortByVal(const std::pair<std::string, int> &a, const std::pair<std::string, int> &b) {
     return (a.second > b.second);
@@ -77,6 +70,8 @@ std::vector<std::pair<std::string, int>> sort_by_value(std::map<std::string, int
 }
 
 int main(int argc, char *argv[]) {
+    boost::locale::generator gen;
+    std::locale::global(gen(""));
     std::string conf_file;
     if (argc == 1) {
         conf_file = "config.dat";
@@ -106,16 +101,14 @@ int main(int argc, char *argv[]) {
     std::ostringstream buffer_ss;
     buffer_ss << raw_file.rdbuf();
     std::string buffer{buffer_ss.str()};
-    std::vector<std::string> files_txt;
-    extract_to_vector(buffer, &files_txt);
-
+    char *txt;
+    extract_from_archive(buffer, &txt);
+    std::string str_txt(txt);
     namespace bl =boost::locale::boundary;
+    boost::locale::normalize(str_txt);
+    boost::locale::fold_case(str_txt);
 
-    boost::algorithm::to_lower(files_txt[0]);
-
-    boost::locale::generator gen;
-    std::locale::global(gen(""));
-    bl::ssegment_index map(bl::word, files_txt[0].begin(), files_txt[0].end());
+    bl::ssegment_index map(bl::word, str_txt.begin(), str_txt.end());
 
 // Define a rule
     map.rule(bl::word_letter);
@@ -143,7 +136,7 @@ int main(int argc, char *argv[]) {
 
     std::vector<std::pair<std::string, int>> vec = sort_by_value(dict);
 
-    write_file2(out_n, vec);
+    write_file(out_n, vec);
 
     return 0;
 }
