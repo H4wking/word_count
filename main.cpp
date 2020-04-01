@@ -11,7 +11,7 @@
 #include <locale>
 
 
-static void extract_to_vector(const std::string &buffer, std::vector<std::string> *vector_txt){
+static void extract_to_vector(const std::string &buffer, std::vector<std::string> *vector_txt) {
     struct archive_entry *entry;
     int r;
     off_t filesize;
