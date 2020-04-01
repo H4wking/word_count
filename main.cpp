@@ -8,7 +8,7 @@
 #include <map>
 #include <vector>
 
-static void extract_from_archive(const std::string &buffer, char **txt) {
+static char *extract_from_archive(const std::string &buffer) {
     // initialize variable for libarchive
     struct archive_entry *entry;
     int r;
@@ -22,15 +22,16 @@ static void extract_from_archive(const std::string &buffer, char **txt) {
     // finding size
     entrysize = archive_entry_size(entry);
     // allocating memory for out data-pointer
-    *txt = static_cast<char *>(malloc(entrysize));
-    r = archive_read_data(a, *txt, entrysize);
+    char *txt_tmp = new char[entrysize];
+    r = archive_read_data(a, txt_tmp, entrysize);
     archive_read_close(a);
     archive_read_free(a);
+    return txt_tmp;
 }
 
 
 template<class struct_t>
-int write_file(std::string filename, struct_t mp) {
+int write_file(const std::string& filename, struct_t mp) {
     std::ofstream out;
     out.open(filename, std::ios::trunc | std::ios::out | std::ios::binary);
     for (auto &it : mp) {
@@ -51,7 +52,7 @@ std::vector<std::pair<std::string, int>> sort_by_value(std::map<std::string, int
     std::vector<std::pair<std::string, int>> vec;
 
     for (it = mp.begin(); it != mp.end(); it++) {
-        vec.push_back(make_pair(it->first, it->second));
+        vec.emplace_back(it->first, it->second);
     }
 
     // // sort the vector by increasing order of its pair's second value
@@ -98,9 +99,9 @@ int main(int argc, char *argv[]) {
     std::ostringstream buffer_ss;
     buffer_ss << raw_file.rdbuf();
     std::string buffer{buffer_ss.str()};
-    char *txt;
-    extract_from_archive(buffer, &txt);
+    char *txt = extract_from_archive(buffer);
     std::string str_txt(txt);
+    delete[] txt;
     namespace bl =boost::locale::boundary;
     boost::locale::normalize(str_txt);
     boost::locale::fold_case(str_txt);
