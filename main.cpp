@@ -8,6 +8,23 @@
 #include <map>
 #include <vector>
 #include <boost/algorithm/string.hpp>
+#include <thread>
+
+#include <numeric>
+
+inline std::chrono::high_resolution_clock::time_point get_current_time_fenced()
+{
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    auto res_time = std::chrono::high_resolution_clock::now();
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    return res_time;
+}
+
+template<class D>
+inline long long to_us(const D& d)
+{
+    return std::chrono::duration_cast<std::chrono::microseconds>(d).count();
+}
 
 static char *extract_from_archive(const std::string &buffer) {
     // initialize variable for libarchive
@@ -60,12 +77,22 @@ std::vector<std::pair<std::string, int>> sort_by_value(std::map<std::string, int
     sort(vec.begin(), vec.end(), sortByVal);
 
     // print the vector
-    std::cout << "The map, sorted by value is: " << std::endl;
-    for (auto &it: vec) {
-        std::cout << boost::format("%1% %|15t| : %|25t| %2%\n") % it.first.c_str() % it.second;
-    }
+//    std::cout << "The map, sorted by value is: " << std::endl;
+//    for (auto &it: vec) {
+//        std::cout << boost::format("%1% %|15t| : %|25t| %2%\n") % it.first.c_str() % it.second;
+//    }
 
     return vec;
+}
+
+void count_words_thr(int from, int to, std::vector<std::string> &words, std::map<std::string, int> &dict) {
+    for (int i = from; i < to; i++) {
+        if (!dict.count(words[i])) {
+            dict.insert(std::pair<std::string, int>(words[i], 1));
+        } else {
+            dict[words[i]] += 1;
+        }
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -109,19 +136,65 @@ int main(int argc, char *argv[]) {
     boost::locale::fold_case(str_txt);
 
     bl::ssegment_index map(bl::word, str_txt.begin(), str_txt.end());
-
 // Define a rule
     map.rule(bl::word_letter);
 // Print all "words" -- chunks of word boundary
 
+    auto start = get_current_time_fenced();
+
     std::map<std::string, int> dict;
-    for (bl::ssegment_index::iterator it = map.begin(), e = map.end(); it != e; ++it) {
-        if (!dict.count(*it)) {
-            dict.insert(std::pair<std::string, int>(*it, 1));
-        } else {
-            dict[*it] += 1;
+
+    if (thr == 1) {
+        for (bl::ssegment_index::iterator it = map.begin(), e = map.end(); it != e; ++it) {
+            if (!dict.count(*it)) {
+                dict.insert(std::pair<std::string, int>(*it, 1));
+            } else {
+                dict[*it] += 1;
+            }
+        }
+    } else {
+        std::vector<std::string> words;
+        for (bl::ssegment_index::iterator it = map.begin(), e = map.end(); it != e; ++it) {
+            words.push_back(*it);
+        }
+        std::map<std::string, int> dicts[thr];
+        std::vector<std::thread> v;
+        int s = words.size();
+
+        for (int i = 0; i < thr - 1; ++i)
+            v.emplace_back(count_words_thr, floor(s / thr) * i, floor(s / thr) * (i + 1),
+                           std::ref(words), std::ref(dicts[i]));
+
+        v.emplace_back(count_words_thr, floor(s / thr) * (thr - 1), s,
+                       std::ref(words), std::ref(dicts[thr - 1]));
+
+        for (auto &t: v) {
+            t.join();
+        }
+
+
+
+        for (auto d : dicts) {
+            for (auto it = d.begin(); it != d.end(); it++) {
+                if (!dict.count(it->first)) {
+                    dict.insert(std::pair<std::string, int>(it->first, it->second));
+                } else {
+                    dict[it->first] += it->second;
+                }
+            }
         }
     }
+
+    auto finish = get_current_time_fenced();
+
+    auto total_time = finish - start;
+
+    std::cout << "Time in us: " << to_us(total_time) << std::endl;
+
+    const std::size_t result = std::accumulate(std::begin(dict), std::end(dict), 0,
+                                               [](const std::size_t previous, const std::pair<const std::string, std::size_t>& p)
+                                               { return previous + p.second; });
+    std::cout << "Words total: " << result << "\n";
 
     write_file(out_a, dict);
     std::vector<std::pair<std::string, int>> vec = sort_by_value(dict);
