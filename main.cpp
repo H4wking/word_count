@@ -7,6 +7,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <boost/algorithm/string.hpp>
 
 static char *extract_from_archive(const std::string &buffer) {
     // initialize variable for libarchive
@@ -14,7 +15,7 @@ static char *extract_from_archive(const std::string &buffer) {
     int r;
     int64_t entrysize;
     struct archive *a = archive_read_new();
-    archive_read_support_filter_all(a);
+//    archive_read_support_filter_all(a);
     // all formats supporting like zip, tar ...
     archive_read_support_format_all(a);
     r = archive_read_open_memory(a, buffer.c_str(), buffer.size());
@@ -25,7 +26,7 @@ static char *extract_from_archive(const std::string &buffer) {
     char *txt_tmp = new char[entrysize];
     r = archive_read_data(a, txt_tmp, entrysize);
     archive_read_close(a);
-    archive_read_free(a);
+//    archive_read_free(a);
     return txt_tmp;
 }
 
@@ -60,7 +61,7 @@ std::vector<std::pair<std::string, int>> sort_by_value(std::map<std::string, int
 
     // print the vector
     std::cout << "The map, sorted by value is: " << std::endl;
-    for (auto &it: mp) {
+    for (auto &it: vec) {
         std::cout << boost::format("%1% %|15t| : %|25t| %2%\n") % it.first.c_str() % it.second;
     }
 
@@ -101,6 +102,7 @@ int main(int argc, char *argv[]) {
     std::string buffer{buffer_ss.str()};
     char *txt = extract_from_archive(buffer);
     std::string str_txt(txt);
+    boost::algorithm::to_lower(str_txt);
     delete[] txt;
     namespace bl =boost::locale::boundary;
     boost::locale::normalize(str_txt);
