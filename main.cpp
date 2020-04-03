@@ -9,8 +9,11 @@
 #include <vector>
 #include <boost/algorithm/string.hpp>
 #include <thread>
+#include <cmath>
 
 #include <numeric>
+
+namespace bl =boost::locale::boundary;
 
 inline std::chrono::high_resolution_clock::time_point get_current_time_fenced()
 {
@@ -131,7 +134,6 @@ int main(int argc, char *argv[]) {
     std::string str_txt(txt);
     boost::algorithm::to_lower(str_txt);
     delete[] txt;
-    namespace bl =boost::locale::boundary;
     boost::locale::normalize(str_txt);
     boost::locale::fold_case(str_txt);
 
@@ -146,11 +148,7 @@ int main(int argc, char *argv[]) {
 
     if (thr == 1) {
         for (bl::ssegment_index::iterator it = map.begin(), e = map.end(); it != e; ++it) {
-            if (!dict.count(*it)) {
-                dict.insert(std::pair<std::string, int>(*it, 1));
-            } else {
-                dict[*it] += 1;
-            }
+            ++dict[*it];
         }
     } else {
         std::vector<std::string> words;
@@ -162,10 +160,10 @@ int main(int argc, char *argv[]) {
         int s = words.size();
 
         for (int i = 0; i < thr - 1; ++i)
-            v.emplace_back(count_words_thr, floor(s / thr) * i, floor(s / thr) * (i + 1),
+            v.emplace_back(count_words_thr, (s / thr) * i, (s / thr) * (i + 1),
                            std::ref(words), std::ref(dicts[i]));
 
-        v.emplace_back(count_words_thr, floor(s / thr) * (thr - 1), s,
+        v.emplace_back(count_words_thr, (s / thr) * (thr - 1), s,
                        std::ref(words), std::ref(dicts[thr - 1]));
 
         for (auto &t: v) {
@@ -175,11 +173,11 @@ int main(int argc, char *argv[]) {
 
 
         for (auto d : dicts) {
-            for (auto it = d.begin(); it != d.end(); it++) {
-                if (!dict.count(it->first)) {
-                    dict.insert(std::pair<std::string, int>(it->first, it->second));
+            for (auto & it : d) {
+                if (!dict.count(it.first)) {
+                    dict.insert(std::pair<std::string, int>(it.first, it.second));
                 } else {
-                    dict[it->first] += it->second;
+                    dict[it.first] += it.second;
                 }
             }
         }
