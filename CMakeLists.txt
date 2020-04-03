@@ -14,8 +14,6 @@ endif ()
 find_package(LibArchive REQUIRED)
 find_package(ICU REQUIRED COMPONENTS uc i18n)
 find_package(Threads REQUIRED)
-#add_subdirectory("path-to-boost-nowide-repo")
-#find_package(boost_nowide)
 find_package(Boost REQUIRED COMPONENTS
         locale filesystem system)
 
@@ -23,5 +21,6 @@ set(Boost_USE_STATIC_LIBS OFF) # enable dynamic linking
 set(Boost_USE_MULTITHREAD ON)  # enable multithreading
 # filesystem -- на майбутнє
 include_directories(${Boost_INCLUDE_DIRS})
+include_directories(${ICU_INCLUDE_DIRS})
 add_executable(word_count src/main.cpp src/t_queue.h)
 target_link_libraries(word_count Threads::Threads ${Boost_LIBRARIES} ${ICU_LIBRARIES} ${LibArchive_LIBRARIES})

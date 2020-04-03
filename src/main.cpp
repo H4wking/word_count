@@ -27,12 +27,11 @@ template<class D>
 inline long long to_us(const D &d) {
     return std::chrono::duration_cast<std::chrono::microseconds>(d).count();
 }
-
-void extract_to_vector(const std::string &buffer, std::vector<std::string> *v) {
+void extract_to_queue(const std::string &buffer, t_queue<std::string>* tq) {
     struct archive *a;
     struct archive_entry *entry;
     int r;
-    off_t entrysize;
+    off_t filesize;
     a = archive_read_new();
     archive_read_support_format_all(a);
     archive_read_support_filter_all(a);
@@ -47,11 +46,11 @@ void extract_to_vector(const std::string &buffer, std::vector<std::string> *v) {
             fprintf(stderr, "%s\n", archive_error_string(a));
         if (r < ARCHIVE_WARN)
             exit(1);
-        entrysize = archive_entry_size(entry);
-        std::string output(entrysize, char{});
+        filesize = archive_entry_size(entry);
+        std::string output(filesize, char{});
         //write explicitly to the other buffer
         r = archive_read_data(a, &output[0], output.size());
-        v->push_back(output);
+        tq->push_back(output);
         if (r < ARCHIVE_WARN)
             exit(1);
     }
@@ -138,11 +137,11 @@ int main(int argc, char *argv[]) {
     std::ostringstream buffer_ss;
     buffer_ss << raw_file.rdbuf();
     std::string buffer{buffer_ss.str()};
-    std::vector<std::string> v;
-    extract_to_vector(buffer, &v);
+    t_queue<std::string> tq;
+    extract_to_queue(buffer, &tq);
 //    char *txt = extract_from_archive(buffer);
 
-    std::string str_txt(v.back());
+    std::string str_txt(tq.pop());
     boost::algorithm::to_lower(str_txt);
 //    delete[] txt;
     boost::locale::normalize(str_txt);
