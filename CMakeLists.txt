@@ -11,7 +11,8 @@ set(Boost_USE_STATIC_LIBS OFF) # enable dynamic linking
 set(Boost_USE_MULTITHREAD ON)  # enable multithreading
 # filesystem -- на майбутнє
 include_directories(${Boost_INCLUDE_DIRS})
-include_directories(${ICU_INCLUDE_DIRS})
+#include_directories(${ICU_INCLUDE_DIRS})
 include_directories(${LibArchive_INCLUDE_DIRS})
-add_executable(word_count src/main.cpp inc/t_queue.h inc/time.hpp)
-target_link_libraries(word_count Threads::Threads ${Boost_LIBRARIES} ${ICU_LIBRARIES} ${LibArchive_LIBRARIES})
+add_executable(word_count src/main.cpp inc/t_queue.h inc/time.hpp lib/read_write.cpp inc/read_write.hpp inc/sort.hpp lib/sort.cpp)
+#target_link_libraries(word_count Threads::Threads ${Boost_LIBRARIES} ${ICU_LIBRARIES} ${LibArchive_LIBRARIES})
+target_link_libraries(word_count Threads::Threads ${Boost_LIBRARIES} ${LibArchive_LIBRARIES})
