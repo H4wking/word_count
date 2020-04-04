@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.15)
 project(word_count)
 set(CMAKE_CXX_STANDARD 17)
 find_package(LibArchive REQUIRED)
-find_package(ICU REQUIRED COMPONENTS uc i18n)
+#find_package(ICU REQUIRED COMPONENTS uc i18n)
 find_package(Threads REQUIRED)
 find_package(Boost REQUIRED COMPONENTS
         locale filesystem system)
