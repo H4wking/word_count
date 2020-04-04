@@ -53,7 +53,7 @@ void reading_from_archive(const std::string &buffer, t_queue<std::string> *tq) {
             break;
         }
         if (r < ARCHIVE_OK) {
-            std::cerr << archive_error_string(a) << std::endl;
+            exit(1);
         }
         if (r < ARCHIVE_WARN) {
             std::cerr << archive_errno(a) << std::endl;
@@ -78,13 +78,15 @@ void reading_from_archive(const std::string &buffer, t_queue<std::string> *tq) {
 //    archive_read_free(a);
 }
 
-void read_from_dir(const std::vector<std::string> files, t_queue<std::string> *tq) {
+void read_from_dir(const std::vector<std::string> &files, t_queue<std::string> *tq) {
     for (const auto &file_name : files) {
         if (fs::exists(file_name)) {
             std::ifstream raw_file(file_name, std::ios::binary);
-            std::ostringstream buffer_ss;
-            buffer_ss << raw_file.rdbuf();
-            std::string buffer{buffer_ss.str()};
+            auto buffer = [&raw_file] {
+                std::ostringstream ss{};
+                ss << raw_file.rdbuf();
+                return ss.str();
+            }();
             if (fs::path(file_name).extension() == ".txt") {
                 tq->push_back(buffer);
             } else if (fs::is_directory(fs::path(file_name))) {
@@ -251,6 +253,5 @@ int main(int argc, char *argv[]) {
     write_file(out_a, dict);
     std::vector<std::pair<std::string, int>> vec = sort_by_value(dict);
     write_file(out_n, vec);
-
     return 0;
 }
