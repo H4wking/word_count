@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.17)
 project(word_count)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 find_package(LibArchive REQUIRED)
 find_package(ICU REQUIRED COMPONENTS uc i18n)
 find_package(Threads REQUIRED)
