@@ -13,5 +13,5 @@ set(Boost_USE_MULTITHREAD ON)  # enable multithreading
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${ICU_INCLUDE_DIRS})
 include_directories(${LibArchive_INCLUDE_DIRS})
-add_executable(word_count src/main.cpp src/t_queue.h inc/time.hpp)
+add_executable(word_count src/main.cpp inc/t_queue.h inc/time.hpp)
 target_link_libraries(word_count Threads::Threads ${Boost_LIBRARIES} ${ICU_LIBRARIES} ${LibArchive_LIBRARIES})
