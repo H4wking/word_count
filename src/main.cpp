@@ -15,22 +15,11 @@
 #include <numeric>
 #include <exception>
 
+#include "../inc/time.hpp"
+
 
 namespace bl =boost::locale::boundary;
 namespace fs = boost::filesystem;
-
-inline std::chrono::high_resolution_clock::time_point get_current_time_fenced() {
-    std::atomic_thread_fence(std::memory_order_seq_cst);
-    auto res_time = std::chrono::high_resolution_clock::now();
-    std::atomic_thread_fence(std::memory_order_seq_cst);
-    return res_time;
-}
-
-template<class D>
-inline long long to_ms(const D &d) {
-    return std::chrono::duration_cast<std::chrono::milliseconds>(d).count();
-}
-
 
 std::vector<std::string> get_file_list(const std::string &path) {
     std::vector<std::string> m_file_list;
@@ -44,7 +33,6 @@ std::vector<std::string> get_file_list(const std::string &path) {
     }
     return m_file_list;
 }
-
 
 void reading_from_archive(const std::string &buffer, t_queue<std::string> *tq) {
     struct archive *a;
