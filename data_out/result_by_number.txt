@@ -1,12 +1,3 @@
-nestedПРивіт  :     1
-nestedПапа  :         1
-nestedвотсап  :     1
-nestedпапулі  :     1
-nestedпрощай  :     1
-nestedхелоу  :       1
-ПРивіт    :         1
-Папа        :         1
-вотсап    :         1
-папулі    :         1
-прощай    :         1
-хелоу      :         1
+analyzing       :         1
+checking        :         1
+test            :         1

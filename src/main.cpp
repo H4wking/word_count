@@ -13,6 +13,7 @@
 #include "t_queue.h"
 #include <boost/filesystem.hpp>
 #include <numeric>
+#include <exception>
 
 
 namespace bl =boost::locale::boundary;
@@ -33,7 +34,7 @@ inline long long to_us(const D &d) {
 
 std::vector<std::string> get_file_list(const std::string &path) {
     std::vector<std::string> m_file_list;
-    if (!path.empty()) {
+    if (fs::is_directory(path) && !fs::is_empty(path)) {
         fs::path apk_path(path);
         fs::recursive_directory_iterator end;
 
@@ -91,19 +92,24 @@ void reading_from_archive(const std::string &buffer, t_queue<std::string> *tq) {
 
 void read_from_dir(const std::vector<std::string> files, t_queue<std::string> *tq) {
     for (const auto &file_name : files) {
-        std::ifstream raw_file(file_name, std::ios::binary);
-        std::ostringstream buffer_ss;
-        buffer_ss << raw_file.rdbuf();
-        std::string buffer{buffer_ss.str()};
-        if (fs::path(file_name).extension() == ".txt") {
-            tq->push_back(buffer);
-        }
-        if (fs::is_directory(fs::path(file_name))) {
-            read_from_dir(get_file_list(file_name), tq);
+        if (fs::exists(file_name)) {
+            std::ifstream raw_file(file_name, std::ios::binary);
+            std::ostringstream buffer_ss;
+            buffer_ss << raw_file.rdbuf();
+            std::string buffer{buffer_ss.str()};
+            if (fs::path(file_name).extension() == ".txt") {
+                tq->push_back(buffer);
+            } else if (fs::is_directory(fs::path(file_name))) {
+                read_from_dir(get_file_list(file_name), tq);
+            } else {
+                reading_from_archive(buffer, tq);
+            }
         } else {
-            reading_from_archive(buffer, tq);
+            std::cerr << "File: " << file_name << "is't exists" << std::endl;
+            exit(1);
         }
     }
+
 }
 
 template<class struct_t>
@@ -181,8 +187,9 @@ int main(int argc, char *argv[]) {
     conf >> out_n;
     conf >> thr;
     t_queue<std::string> tq;
-    auto files = get_file_list(in);
-    read_from_dir(files, &tq);
+    std::vector<std::string> root;
+    root.push_back(in);
+    read_from_dir(root, &tq);
 
 
 //    char *txt = extract_from_archive(buffer);
