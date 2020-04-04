@@ -10,15 +10,13 @@
 #include <boost/algorithm/string.hpp>
 #include <thread>
 #include <cmath>
-#include "t_queue.h"
+#include "../inc/t_queue.h"
 #include <boost/filesystem.hpp>
 #include <numeric>
 #include <exception>
-
 #include "../inc/time.hpp"
 
-
-namespace bl =boost::locale::boundary;
+namespace bl = boost::locale::boundary;
 namespace fs = boost::filesystem;
 
 std::vector<std::string> get_file_list(const std::string &path) {
