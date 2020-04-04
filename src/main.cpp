@@ -27,8 +27,8 @@ inline std::chrono::high_resolution_clock::time_point get_current_time_fenced() 
 }
 
 template<class D>
-inline long long to_us(const D &d) {
-    return std::chrono::duration_cast<std::chrono::microseconds>(d).count();
+inline long long to_ms(const D &d) {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(d).count();
 }
 
 
@@ -53,7 +53,7 @@ void reading_from_archive(const std::string &buffer, t_queue<std::string> *tq) {
     off_t entry_size;
     a = archive_read_new();
     archive_read_support_format_all(a);
-    archive_read_support_filter_all(a);
+//    archive_read_support_filter_all(a);
     archive_read_support_format_raw(a);
     // read from buffer, not from the file
     if ((r = archive_read_open_memory(a, buffer.c_str(), buffer.size()))) {
@@ -87,7 +87,7 @@ void reading_from_archive(const std::string &buffer, t_queue<std::string> *tq) {
         }
     }
     archive_read_close(a);
-    archive_read_free(a);
+//    archive_read_free(a);
 }
 
 void read_from_dir(const std::vector<std::string> files, t_queue<std::string> *tq) {
@@ -151,11 +151,7 @@ std::vector<std::pair<std::string, int>> sort_by_value(std::map<std::string, int
 
 void count_words_thr(int from, int to, std::vector<std::string> &words, std::map<std::string, int> &dict) {
     for (int i = from; i < to; i++) {
-        if (!dict.count(words[i])) {
-            dict.insert(std::pair<std::string, int>(words[i], 1));
-        } else {
-            dict[words[i]] += 1;
-        }
+        ++dict[words[i]];
     }
 }
 
@@ -186,6 +182,9 @@ int main(int argc, char *argv[]) {
     conf >> out_a;
     conf >> out_n;
     conf >> thr;
+
+    auto start_load = get_current_time_fenced();
+
     t_queue<std::string> tq;
     std::vector<std::string> root;
     root.push_back(in);
@@ -209,7 +208,7 @@ int main(int argc, char *argv[]) {
     map.rule(bl::word_letters);
 // Print all "words" -- chunks of word boundary
 
-    auto start = get_current_time_fenced();
+    auto start_count = get_current_time_fenced();
 
     std::map<std::string, int> dict;
 
@@ -240,20 +239,19 @@ int main(int argc, char *argv[]) {
 
         for (const auto &d : dicts) {
             for (auto &it : d) {
-                if (!dict.count(it.first)) {
-                    dict.insert(std::pair<std::string, int>(it.first, it.second));
-                } else {
-                    dict[it.first] += it.second;
-                }
+                dict[it.first] += it.second;
             }
         }
     }
 
     auto finish = get_current_time_fenced();
 
-    auto total_time = finish - start;
+    auto load_time = start_count - start_load;
+    auto count_time = finish - start_count;
 
-    std::cout << "Time in us: " << to_us(total_time) << std::endl;
+    std::cout << "Loading: " << static_cast<float>(to_ms(load_time)) / 1000 << std::endl;
+    std::cout << "Analyzing: " << static_cast<float>(to_ms(count_time)) / 1000 << std::endl;
+    std::cout << "Total: " << static_cast<float>(to_ms(load_time + count_time)) / 1000 << std::endl;
 
     const std::size_t result = std::accumulate(std::begin(dict), std::end(dict), 0,
                                                [](const std::size_t previous,
