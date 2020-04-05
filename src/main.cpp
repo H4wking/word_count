@@ -54,6 +54,11 @@ int main(int argc, char *argv[]) {
     conf >> out_n;
     conf >> thr;
 
+    if (thr < 1) {
+        std::cerr << "Insufficient number of threads." << std::endl;
+        exit(3);
+    }
+
     auto start_load = get_current_time_fenced();
 
     t_queue<std::string> tq;
@@ -72,9 +77,8 @@ int main(int argc, char *argv[]) {
     boost::locale::fold_case(str_txt);
 
     bl::ssegment_index map(bl::word, str_txt.begin(), str_txt.end());
-// Define a rule
+    // Define a rule
     map.rule(bl::word_letters);
-// Print all "words" -- chunks of word boundary
 
     auto start_count = get_current_time_fenced();
 
