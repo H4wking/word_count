@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "../inc/sort.hpp"
 
 
@@ -14,7 +15,7 @@ std::vector<std::pair<std::string, int>> sort_by_value(std::map<std::string, int
         vec.emplace_back(it->first, it->second);
     }
 
-    sort(vec.begin(), vec.end(), sort_by_val);
+    std::sort(vec.begin(), vec.end(), sort_by_val);
 
     return vec;
 }
