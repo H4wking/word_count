@@ -18,10 +18,7 @@
 #include "../inc/read_write.hpp"
 #include "../inc/sort.hpp"
 
-
-
 namespace bl = boost::locale::boundary;
-
 
 void count_words_thr(int from, int to, std::vector<std::string> &words, std::map<std::string, int> &dict) {
     for (int i = from; i < to; i++) {
@@ -65,15 +62,12 @@ int main(int argc, char *argv[]) {
     read_from_dir(root, &tq);
 
 
-//    char *txt = extract_from_archive(buffer);
     std::string str_txt;
     while (tq.get_size()) {
         str_txt += std::string(tq.pop());
         str_txt += "\n";
     }
-//    std::string str_txt(tq.pop());
     boost::algorithm::to_lower(str_txt);
-//    delete[] txt;
     boost::locale::normalize(str_txt);
     boost::locale::fold_case(str_txt);
 
@@ -110,7 +104,6 @@ int main(int argc, char *argv[]) {
             t.join();
         }
 
-
         for (const auto &d : dicts) {
             for (auto &it : d) {
                 dict[it.first] += it.second;
@@ -126,13 +119,6 @@ int main(int argc, char *argv[]) {
     std::cout << "Loading: " << static_cast<float>(to_ms(load_time)) / 1000 << std::endl;
     std::cout << "Analyzing: " << static_cast<float>(to_ms(count_time)) / 1000 << std::endl;
     std::cout << "Total: " << static_cast<float>(to_ms(load_time + count_time)) / 1000 << std::endl;
-
-    const std::size_t result = std::accumulate(std::begin(dict), std::end(dict), 0,
-                                               [](const std::size_t previous,
-                                                  const std::pair<const std::string, std::size_t> &p) {
-                                                   return previous + p.second;
-                                               });
-    std::cout << "Words total: " << result << "\n";
 
     write_file(out_a, dict);
     std::vector<std::pair<std::string, int>> vec = sort_by_value(dict);

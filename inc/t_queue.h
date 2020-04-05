@@ -1,10 +1,5 @@
-//
-// Created by sluzh on 4/3/2020.
-//
-
 #ifndef WORD_COUNT_T_QUEUE_H
 #define WORD_COUNT_T_QUEUE_H
-
 
 #include <deque>
 #include <iostream>
@@ -37,7 +32,6 @@ public:
         cond_variable.notify_one();
     }
 
-
     T pop() {
         std::unique_lock<std::mutex> lg(mut);
         if (queue.empty()) {
@@ -54,6 +48,5 @@ public:
         return queue.size();
     }
 };
-
 
 #endif //WORD_COUNT_T_QUEUE_H

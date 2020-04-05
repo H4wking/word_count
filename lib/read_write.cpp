@@ -78,16 +78,4 @@ void read_from_dir(const std::vector<std::string> files, t_queue<std::string> *t
             exit(1);
         }
     }
-
 }
-
-//template<class struct_t>
-//int write_file(const std::string &filename, struct_t mp) {
-//    std::ofstream out;
-//    out.open(filename, std::ios::trunc | std::ios::out | std::ios::binary);
-//    for (auto &it : mp) {
-//        out << boost::format("%1% %|15t| : %|25t| %2%\n") % it.first.c_str() % it.second;
-//    }
-//    out.close();
-//    return 0;
-//}
