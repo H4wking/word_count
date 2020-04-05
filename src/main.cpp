@@ -15,127 +15,10 @@
 #include <numeric>
 #include <exception>
 #include "../inc/time.hpp"
+#include "../inc/read_write.hpp"
+#include "../inc/sort.hpp"
 
 namespace bl = boost::locale::boundary;
-namespace fs = boost::filesystem;
-
-std::vector<std::string> get_file_list(const std::string &path) {
-    std::vector<std::string> m_file_list;
-    if (fs::is_directory(path) && !fs::is_empty(path)) {
-        fs::path apk_path(path);
-        fs::recursive_directory_iterator end;
-
-        for (auto &p : boost::filesystem::directory_iterator(path)) {
-            m_file_list.push_back(p.path().string());
-        }
-    }
-    return m_file_list;
-}
-
-void reading_from_archive(const std::string &buffer, t_queue<std::string> *tq) {
-    struct archive *a;
-    struct archive_entry *entry;
-    la_int64_t r;
-    off_t entry_size;
-    a = archive_read_new();
-    archive_read_support_format_all(a);
-//    archive_read_support_filter_all(a);
-    archive_read_support_format_raw(a);
-    // read from buffer, not from the file
-    if ((r = archive_read_open_memory(a, buffer.c_str(), buffer.size()))) {
-        exit(1);
-    }
-    for (;;) {
-        r = archive_read_next_header(a, &entry);
-        if (r == ARCHIVE_EOF) {
-            break;
-        }
-        if (r < ARCHIVE_OK) {
-            exit(1);
-        }
-        if (r < ARCHIVE_WARN) {
-            std::cerr << archive_errno(a) << std::endl;
-            std::cerr << archive_error_string(a) << std::endl;
-            exit(1);
-        }
-
-        // Do nothing if not txt files
-        if (boost::filesystem::path(archive_entry_pathname(entry)).extension() == ".txt") {
-            entry_size = archive_entry_size(entry);
-            std::string output(entry_size, char{});
-            //write explicitly to the other buffer
-            r = archive_read_data(a, &output[0], output.size());
-            tq->push_back(output);
-        }
-
-        if (r < ARCHIVE_WARN) {
-            exit(1);
-        }
-    }
-    archive_read_close(a);
-//    archive_read_free(a);
-}
-
-void read_from_dir(const std::vector<std::string> &files, t_queue<std::string> *tq) {
-    for (const auto &file_name : files) {
-        if (fs::exists(file_name)) {
-            std::ifstream raw_file(file_name, std::ios::binary);
-            auto buffer = [&raw_file] {
-                std::ostringstream ss{};
-                ss << raw_file.rdbuf();
-                return ss.str();
-            }();
-            if (fs::path(file_name).extension() == ".txt") {
-                tq->push_back(buffer);
-            } else if (fs::is_directory(fs::path(file_name))) {
-                read_from_dir(get_file_list(file_name), tq);
-            } else {
-                reading_from_archive(buffer, tq);
-            }
-        } else {
-            std::cerr << "File: " << file_name << "is't exists" << std::endl;
-            exit(1);
-        }
-    }
-
-}
-
-template<class struct_t>
-int write_file(const std::string &filename, struct_t mp) {
-    std::ofstream out;
-    out.open(filename, std::ios::trunc | std::ios::out | std::ios::binary);
-    for (auto &it : mp) {
-        out << boost::format("%1% %|15t| : %|25t| %2%\n") % it.first.c_str() % it.second;
-    }
-    out.close();
-    return 0;
-}
-
-
-bool sort_by_val(const std::pair<std::string, int> &a, const std::pair<std::string, int> &b) {
-    return (a.second > b.second);
-}
-
-std::vector<std::pair<std::string, int>> sort_by_value(std::map<std::string, int> mp) {
-    std::map<std::string, int>::iterator it;
-
-    std::vector<std::pair<std::string, int>> vec;
-
-    for (it = mp.begin(); it != mp.end(); it++) {
-        vec.emplace_back(it->first, it->second);
-    }
-
-    // // sort the vector by increasing order of its pair's second value
-    sort(vec.begin(), vec.end(), sort_by_val);
-
-    // print the vector
-//    std::cout << "The map, sorted by value is: " << std::endl;
-//    for (auto &it: vec) {
-//        std::cout << boost::format("%1% %|15t| : %|25t| %2%\n") % it.first.c_str() % it.second;
-//    }
-
-    return vec;
-}
 
 void count_words_thr(int from, int to, std::vector<std::string> &words, std::map<std::string, int> &dict) {
     for (int i = from; i < to; i++) {
@@ -171,6 +54,11 @@ int main(int argc, char *argv[]) {
     conf >> out_n;
     conf >> thr;
 
+    if (thr < 1) {
+        std::cerr << "Insufficient number of threads." << std::endl;
+        exit(3);
+    }
+
     auto start_load = get_current_time_fenced();
 
     t_queue<std::string> tq;
@@ -179,22 +67,18 @@ int main(int argc, char *argv[]) {
     read_from_dir(root, &tq);
 
 
-//    char *txt = extract_from_archive(buffer);
     std::string str_txt;
     while (tq.get_size()) {
         str_txt += std::string(tq.pop());
         str_txt += "\n";
     }
-//    std::string str_txt(tq.pop());
     boost::algorithm::to_lower(str_txt);
-//    delete[] txt;
     boost::locale::normalize(str_txt);
     boost::locale::fold_case(str_txt);
 
     bl::ssegment_index map(bl::word, str_txt.begin(), str_txt.end());
-// Define a rule
+    // Define a rule
     map.rule(bl::word_letters);
-// Print all "words" -- chunks of word boundary
 
     auto start_count = get_current_time_fenced();
 
@@ -224,7 +108,6 @@ int main(int argc, char *argv[]) {
             t.join();
         }
 
-
         for (const auto &d : dicts) {
             for (auto &it : d) {
                 dict[it.first] += it.second;
@@ -241,15 +124,9 @@ int main(int argc, char *argv[]) {
     std::cout << "Analyzing: " << static_cast<float>(to_ms(count_time)) / 1000 << std::endl;
     std::cout << "Total: " << static_cast<float>(to_ms(load_time + count_time)) / 1000 << std::endl;
 
-    const std::size_t result = std::accumulate(std::begin(dict), std::end(dict), 0,
-                                               [](const std::size_t previous,
-                                                  const std::pair<const std::string, std::size_t> &p) {
-                                                   return previous + p.second;
-                                               });
-    std::cout << "Words total: " << result << "\n";
-
     write_file(out_a, dict);
     std::vector<std::pair<std::string, int>> vec = sort_by_value(dict);
     write_file(out_n, vec);
+
     return 0;
 }
